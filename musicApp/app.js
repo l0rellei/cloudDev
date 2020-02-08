@@ -1,19 +1,16 @@
-var AWS = require("aws-sdk");
 var albumBucketName = "florentinas-music-app";
 var bucketRegion = "us-east-1";
-var profile = "default";
-// var IdentityPoolId = "us-east-1:a13e5419-45f2-4aed-ac44-8d0cd3453ed0";
-// var credentials = new AWS.SharedIniFileCredentials({profile: 'default'});
-// AWS.config.credentials = credentials;
+// var profile = "default";
+var IdentityPoolId = "us-east-1:a13e5419-45f2-4aed-ac44-8d0cd3453ed0";
 
 AWS.config.update({
   region: bucketRegion,
-//   credentials: new AWS.CognitoIdentityCredentials({
-//     IdentityPoolId: IdentityPoolId
-//   })
-  credentials: new AWS.SharedIniFileCredentials({
-      profile: profile
+  credentials: new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: IdentityPoolId
   })
+  // credentials: new AWS.SharedIniFileCredentials({
+  //     profile: profile
+  // })
 });
 
 var s3 = new AWS.S3({
