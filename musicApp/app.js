@@ -183,7 +183,7 @@ function viewArtist(artistName) {
       "<div>",
       getHtml(albums),
       "</div>",
-      '<input id="albumupload" type="file" webkitdirectory mozdirectory directory multiple>',
+      '<input id="albumupload" type="file" webkitdirectory mozdirectory directory accept="audio/*">',
       '<button id="addalbum" onclick="addAlbum(\'' + artistName + "')\">",
       "Add Album",
       "</button>",
@@ -230,36 +230,40 @@ function viewArtist(artistName) {
 // }
 function addAlbum(artistName) {
   var files = document.getElementById("albumupload").files;
+  var artistAlbumsKey = encodeURIComponent(artistName) + "/Albums/";
+
+  console.log(files);
   if (!files.length) {
     return alert("Please choose a file to upload first.");
   }
-  var file = files[0];
-  var fileName = file.name;
-  var artistAlbumsKey = encodeURIComponent(artistName) + "/Albums/";
 
-  var albumKey = artistAlbumsKey + fileName;
+    var file = files[0];
+    var fileName = file.name;
+    
 
-  // Use S3 ManagedUpload class as it supports multipart uploads
-  var upload = new AWS.S3.ManagedUpload({
-    params: {
-      Bucket: artistBucketName,
-      Key: albumKey,
-      Body: file,
-      ACL: "public-read"
-    }
-  });
+    var albumKey = artistAlbumsKey + fileName;
 
-  var promise = upload.promise();
+    // Use S3 ManagedUpload class as it supports multipart uploads
+    var upload = new AWS.S3.ManagedUpload({
+      params: {
+        Bucket: artistBucketName,
+        Key: albumKey,
+        Body: file,
+        ACL: "public-read"
+      }
+    });
 
-  promise.then(
-    function(data) {
-      alert("Successfully uploaded album.");
-      viewArtist(artistName);
-    },
-    function(err) {
-      return alert("There was an error uploading your album: ", err.message);
-    }
-  );
+    var promise = upload.promise();
+
+    promise.then(
+      function(data) {
+        alert("Successfully uploaded album.");
+        // viewArtist(artistName);
+      },
+      function(err) {
+        return alert("There was an error uploading your album: ", err.message);
+      }
+    );
 }
 
 function deletePhoto(artistName, photoKey) {
