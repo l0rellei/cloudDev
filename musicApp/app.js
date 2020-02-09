@@ -139,7 +139,7 @@ function createArtist(artistName) {
 //   });
 // }
 function viewArtist(artistName) {
-  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
+  var artistAlbumsKey = encodeURIComponent(artistName) + "/Albums/";
   s3.listObjects({ Prefix: artistAlbumsKey }, function(err, data) {
     if (err) {
       return alert("There was an error viewing your artist: " + err.message);
@@ -149,6 +149,7 @@ function viewArtist(artistName) {
     var bucketUrl = href + artistBucketName + "/";
 
     var albums = data.Contents.map(function(album) {
+      console.log(album);
       var albumKey = album.Key;
       var albumUrl = bucketUrl + encodeURIComponent(albumKey);
       return getHtml([
@@ -156,7 +157,7 @@ function viewArtist(artistName) {
         // "<div>",
         // '<img style="width:128px;height:128px;" src="' + albumUrl + '"/>',
         // "</div>",
-        // "<div>",
+        "<div>",
         "<span onclick=\"deleteAlbum('" +
           artistName +
           "','" +
@@ -229,20 +230,12 @@ function viewArtist(artistName) {
 // }
 function addAlbum(artistName) {
   var files = document.getElementById("albumupload").files;
-  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
-  var upload = new AWS.S3.ManagedUpload();
   if (!files.length) {
     return alert("Please choose a file to upload first.");
   }
-  for (var item of files){
-    var file = item;
-    var fileName = file.name;
-    var albumKey = artistAlbumsKey + fileName;
-    s3.upload
-  }
-  // var file = files[0];
-  // var fileName = file.name;
-  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
+  var file = files[0];
+  var fileName = file.name;
+  var artistAlbumsKey = encodeURIComponent(artistName) + "/Albums/";
 
   var albumKey = artistAlbumsKey + fileName;
 
