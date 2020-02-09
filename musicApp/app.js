@@ -1,5 +1,6 @@
-var albumBucketName = "florentinas-music-app";
+var artistBucketName = "florentinas-music-app";
 var bucketRegion = "us-east-1";
+// var AWS = require ('aws-sdk');
 // var profile = "default";
 var IdentityPoolId = "us-east-1:a13e5419-45f2-4aed-ac44-8d0cd3453ed0";
 
@@ -15,40 +16,40 @@ AWS.config.update({
 
 var s3 = new AWS.S3({
   apiVersion: "2006-03-01",
-  params: { Bucket: albumBucketName }
+  params: { Bucket: artistBucketName }
 });
 
-function listAlbums() {
+function listArtists() {
   s3.listObjects({ Delimiter: "/" }, function(err, data) {
     if (err) {
-      return alert("There was an error listing your albums: " + err.message);
+      return alert("There was an error listing your artists: " + err.message);
     } else {
-      var albums = data.CommonPrefixes.map(function(commonPrefix) {
+      var artists = data.CommonPrefixes.map(function(commonPrefix) {
         var prefix = commonPrefix.Prefix;
-        var albumName = decodeURIComponent(prefix.replace("/", ""));
+        var artistName = decodeURIComponent(prefix.replace("/", ""));
         return getHtml([
           "<li>",
-          "<span onclick=\"deleteAlbum('" + albumName + "')\">X</span>",
-          "<span onclick=\"viewAlbum('" + albumName + "')\">",
-          albumName,
+          "<span onclick=\"deleteArtist('" + artistName + "')\">X</span>",
+          "<span onclick=\"viewArtist('" + artistName + "')\">",
+          artistName,
           "</span>",
           "</li>"
         ]);
       });
-      var message = albums.length
+      var message = artists.length
         ? getHtml([
-            "<p>Click on an album name to view it.</p>",
-            "<p>Click on the X to delete the album.</p>"
+            "<p>Click on an artist name to view it.</p>",
+            "<p>Click on the X to delete the artist.</p>"
           ])
-        : "<p>You do not have any albums. Please Create album.";
+        : "<p>You do not have any artists. Please Create artist.";
       var htmlTemplate = [
-        "<h2>Albums</h2>",
+        "<h2>Artists</h2>",
         message,
         "<ul>",
-        getHtml(albums),
+        getHtml(artists),
         "</ul>",
-        "<button onclick=\"createAlbum(prompt('Enter Album Name:'))\">",
-        "Create New Album",
+        "<button onclick=\"createArtist(prompt('Enter Artist Name:'))\">",
+        "Create New Artist",
         "</button>"
       ];
       document.getElementById("app").innerHTML = getHtml(htmlTemplate);
@@ -56,104 +57,200 @@ function listAlbums() {
   });
 }
 
-function createAlbum(albumName) {
-  albumName = albumName.trim();
-  if (!albumName) {
-    return alert("Album names must contain at least one non-space character.");
+function createArtist(artistName) {
+  artistName = artistName.trim();
+  if (!artistName) {
+    return alert("Artist names must contain at least one non-space character.");
   }
-  if (albumName.indexOf("/") !== -1) {
-    return alert("Album names cannot contain slashes.");
+  if (artistName.indexOf("/") !== -1) {
+    return alert("Artist names cannot contain slashes.");
   }
-  var albumKey = encodeURIComponent(albumName) + "/";
-  s3.headObject({ Key: albumKey }, function(err, data) {
+  var artistKey = encodeURIComponent(artistName) + "/";
+  s3.headObject({ Key: artistKey }, function(err, data) {
     if (!err) {
-      return alert("Album already exists.");
+      return alert("Artist already exists.");
     }
     if (err.code !== "NotFound") {
-      return alert("There was an error creating your album: " + err.message);
+      return alert("There was an error creating your artist: " + err.message);
     }
-    s3.putObject({ Key: albumKey }, function(err, data) {
+    s3.putObject({ Key: artistKey }, function(err, data) {
       if (err) {
-        return alert("There was an error creating your album: " + err.message);
+        return alert("There was an error creating your artist: " + err.message);
       }
-      alert("Successfully created album.");
-      viewAlbum(albumName);
+      alert("Successfully created artist.");
+      viewArtist(artistName);
     });
   });
 }
 
-function viewAlbum(albumName) {
-  var albumPhotosKey = encodeURIComponent(albumName) + "//";
-  s3.listObjects({ Prefix: albumPhotosKey }, function(err, data) {
+// function viewArtist(artistName) {
+//   var artistPhotosKey = encodeURIComponent(artistName) + "//";
+//   s3.listObjects({ Prefix: artistPhotosKey }, function(err, data) {
+//     if (err) {
+//       return alert("There was an error viewing your artist: " + err.message);
+//     }
+//     // 'this' references the AWS.Response instance that represents the response
+//     var href = this.request.httpRequest.endpoint.href;
+//     var bucketUrl = href + artistBucketName + "/";
+
+//     var photos = data.Contents.map(function(photo) {
+//       var photoKey = photo.Key;
+//       var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+//       return getHtml([
+//         "<span>",
+//         // "<div>",
+//         // '<img style="width:128px;height:128px;" src="' + photoUrl + '"/>',
+//         // "</div>",
+//         // "<div>",
+//         "<span onclick=\"deletePhoto('" +
+//           artistName +
+//           "','" +
+//           photoKey +
+//           "')\">",
+//         "X",
+//         "</span>",
+//         "<span>",
+//         photoKey.replace(artistPhotosKey, ""),
+//         "</span>",
+//         "</div>",
+//         "</span>"
+//       ]);
+//     });
+//     var message = photos.length
+//       ? "<p>Click on the X to delete the photo</p>"
+//       : "<p>You do not have any photos in this artist. Please add photos.</p>";
+//     var htmlTemplate = [
+//       "<h2>",
+//       "Artist: " + artistName,
+//       "</h2>",
+//       message,
+//       "<div>",
+//       getHtml(photos),
+//       "</div>",
+//       '<input id="photoupload" type="file" webkitdirectory mozdirectory multiple>',
+//       '<button id="addphoto" onclick="addPhoto(\'' + artistName + "')\">",
+//       "Add Photo",
+//       "</button>",
+//       '<button onclick="listArtists()">',
+//       "Back To Artists",
+//       "</button>"
+//     ];
+//     document.getElementById("app").innerHTML = getHtml(htmlTemplate);
+//   });
+// }
+function viewArtist(artistName) {
+  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
+  s3.listObjects({ Prefix: artistAlbumsKey }, function(err, data) {
     if (err) {
-      return alert("There was an error viewing your album: " + err.message);
+      return alert("There was an error viewing your artist: " + err.message);
     }
     // 'this' references the AWS.Response instance that represents the response
     var href = this.request.httpRequest.endpoint.href;
-    var bucketUrl = href + albumBucketName + "/";
+    var bucketUrl = href + artistBucketName + "/";
 
-    var photos = data.Contents.map(function(photo) {
-      var photoKey = photo.Key;
-      var photoUrl = bucketUrl + encodeURIComponent(photoKey);
+    var albums = data.Contents.map(function(album) {
+      var albumKey = album.Key;
+      var albumUrl = bucketUrl + encodeURIComponent(albumKey);
       return getHtml([
         "<span>",
-        "<div>",
-        '<img style="width:128px;height:128px;" src="' + photoUrl + '"/>',
-        "</div>",
-        "<div>",
-        "<span onclick=\"deletePhoto('" +
-          albumName +
+        // "<div>",
+        // '<img style="width:128px;height:128px;" src="' + albumUrl + '"/>',
+        // "</div>",
+        // "<div>",
+        "<span onclick=\"deleteAlbum('" +
+          artistName +
           "','" +
-          photoKey +
+          albumKey +
           "')\">",
         "X",
         "</span>",
         "<span>",
-        photoKey.replace(albumPhotosKey, ""),
+        albumKey.replace(artistAlbumsKey, ""),
         "</span>",
         "</div>",
         "</span>"
       ]);
     });
-    var message = photos.length
-      ? "<p>Click on the X to delete the photo</p>"
-      : "<p>You do not have any photos in this album. Please add photos.</p>";
+    var message = albums.length
+      ? "<p>Click on the X to delete the album</p>"
+      : "<p>You do not have any albums in this artist. Please add albums.</p>";
     var htmlTemplate = [
       "<h2>",
-      "Album: " + albumName,
+      "Artist: " + artistName,
       "</h2>",
       message,
       "<div>",
-      getHtml(photos),
+      getHtml(albums),
       "</div>",
-      '<input id="photoupload" type="file" accept="image/*">',
-      '<button id="addphoto" onclick="addPhoto(\'' + albumName + "')\">",
-      "Add Photo",
+      '<input id="albumupload" type="file" webkitdirectory mozdirectory directory multiple>',
+      '<button id="addalbum" onclick="addAlbum(\'' + artistName + "')\">",
+      "Add Album",
       "</button>",
-      '<button onclick="listAlbums()">',
-      "Back To Albums",
+      '<button onclick="listArtists()">',
+      "Back To Artists",
       "</button>"
     ];
     document.getElementById("app").innerHTML = getHtml(htmlTemplate);
   });
 }
 
-function addPhoto(albumName) {
-  var files = document.getElementById("photoupload").files;
+// function addPhoto(artistName) {
+//   var files = document.getElementById("photoupload").files;
+//   if (!files.length) {
+//     return alert("Please choose a file to upload first.");
+//   }
+//   var file = files[0];
+//   var fileName = file.name;
+//   var artistPhotosKey = encodeURIComponent(artistName) + "//";
+
+//   var photoKey = artistPhotosKey + fileName;
+
+//   // Use S3 ManagedUpload class as it supports multipart uploads
+//   var upload = new AWS.S3.ManagedUpload({
+//     params: {
+//       Bucket: artistBucketName,
+//       Key: photoKey,
+//       Body: file,
+//       ACL: "public-read"
+//     }
+//   });
+
+//   var promise = upload.promise();
+
+//   promise.then(
+//     function(data) {
+//       alert("Successfully uploaded photo.");
+//       viewArtist(artistName);
+//     },
+//     function(err) {
+//       return alert("There was an error uploading your photo: ", err.message);
+//     }
+//   );
+// }
+function addAlbum(artistName) {
+  var files = document.getElementById("albumupload").files;
+  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
+  var upload = new AWS.S3.ManagedUpload();
   if (!files.length) {
     return alert("Please choose a file to upload first.");
   }
-  var file = files[0];
-  var fileName = file.name;
-  var albumPhotosKey = encodeURIComponent(albumName) + "//";
+  for (var item of files){
+    var file = item;
+    var fileName = file.name;
+    var albumKey = artistAlbumsKey + fileName;
+    s3.upload
+  }
+  // var file = files[0];
+  // var fileName = file.name;
+  var artistAlbumsKey = encodeURIComponent(artistName) + "//";
 
-  var photoKey = albumPhotosKey + fileName;
+  var albumKey = artistAlbumsKey + fileName;
 
   // Use S3 ManagedUpload class as it supports multipart uploads
   var upload = new AWS.S3.ManagedUpload({
     params: {
-      Bucket: albumBucketName,
-      Key: photoKey,
+      Bucket: artistBucketName,
+      Key: albumKey,
       Body: file,
       ACL: "public-read"
     }
@@ -163,30 +260,30 @@ function addPhoto(albumName) {
 
   promise.then(
     function(data) {
-      alert("Successfully uploaded photo.");
-      viewAlbum(albumName);
+      alert("Successfully uploaded album.");
+      viewArtist(artistName);
     },
     function(err) {
-      return alert("There was an error uploading your photo: ", err.message);
+      return alert("There was an error uploading your album: ", err.message);
     }
   );
 }
 
-function deletePhoto(albumName, photoKey) {
+function deletePhoto(artistName, photoKey) {
   s3.deleteObject({ Key: photoKey }, function(err, data) {
     if (err) {
       return alert("There was an error deleting your photo: ", err.message);
     }
     alert("Successfully deleted photo.");
-    viewAlbum(albumName);
+    viewArtist(artistName);
   });
 }
 
-function deleteAlbum(albumName) {
-  var albumKey = encodeURIComponent(albumName) + "/";
-  s3.listObjects({ Prefix: albumKey }, function(err, data) {
+function deleteArtist(artistName) {
+  var artistKey = encodeURIComponent(artistName) + "/";
+  s3.listObjects({ Prefix: artistKey }, function(err, data) {
     if (err) {
-      return alert("There was an error deleting your album: ", err.message);
+      return alert("There was an error deleting your artist: ", err.message);
     }
     var objects = data.Contents.map(function(object) {
       return { Key: object.Key };
@@ -197,10 +294,10 @@ function deleteAlbum(albumName) {
       },
       function(err, data) {
         if (err) {
-          return alert("There was an error deleting your album: ", err.message);
+          return alert("There was an error deleting your artist: ", err.message);
         }
-        alert("Successfully deleted album.");
-        listAlbums();
+        alert("Successfully deleted artist.");
+        listArtists();
       }
     );
   });
